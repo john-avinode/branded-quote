@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 import { sampleQuote } from './data/sampleQuote.js';
+import { TripView } from './tripview/TripView.jsx';
 
 const GOOGLE_FONT_CHOICES = [
   'Inter',
@@ -108,6 +109,7 @@ const SURPRISE_GUIDES = [
 ];
 
 export function App() {
+  const [screen, setScreen] = useState('trip');
   const [url, setUrl] = useState('vistajet.com');
   const [guide, setGuide] = useState(DEFAULT_GUIDE);
   const [layout, setLayout] = useState(DEFAULT_LAYOUT);
@@ -135,6 +137,10 @@ export function App() {
       ? `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`
       : '';
   }, [guide.typography.heading, guide.typography.body]);
+
+  if (screen === 'trip') {
+    return <TripView onSetup={() => setScreen('builder')} />;
+  }
 
   async function analyzeWebsite(event) {
     event.preventDefault();
