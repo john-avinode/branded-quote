@@ -11,6 +11,7 @@ import {
   RefreshCcw,
   Route,
   Shuffle,
+  Sparkles,
   Type,
   Wand2
 } from 'lucide-react';
@@ -55,18 +56,75 @@ const DEFAULT_GUIDE = {
 };
 
 const DEFAULT_LAYOUT = {
-  imageLayout: 'feature',
+  imageStyle: 'showcase',
   commentPlacement: 'callout',
   itineraryStyle: 'timeline',
   dataStyle: 'grid'
 };
 
+const IMAGE_STYLE_OPTIONS = [
+  {
+    value: 'showcase',
+    label: 'Showcase',
+    icon: Image,
+    description: 'Hero first, thumbnails adapt by count'
+  },
+  {
+    value: 'gallery',
+    label: 'Gallery',
+    icon: LayoutGrid,
+    description: 'Hero with a horizontal thumbnail story'
+  },
+  {
+    value: 'comparison',
+    label: 'Comparison',
+    icon: Plane,
+    description: 'Balanced image blocks for quick scanning'
+  },
+  {
+    value: 'editorial',
+    label: 'Editorial',
+    icon: Sparkles,
+    description: 'Modern floating hero collage'
+  }
+];
+
+const IMAGE_PATTERN_BY_STYLE = {
+  showcase: {
+    0: 'empty',
+    1: 'single',
+    2: 'two-up',
+    3: 'hero-side',
+    4: 'hero-side',
+    5: 'hero-grid'
+  },
+  gallery: {
+    0: 'empty',
+    1: 'single',
+    2: 'two-stack',
+    3: 'hero-bottom',
+    4: 'hero-bottom',
+    5: 'hero-bottom'
+  },
+  comparison: {
+    0: 'empty',
+    1: 'single',
+    2: 'two-up',
+    3: 'even-grid',
+    4: 'even-grid',
+    5: 'hero-grid'
+  },
+  editorial: {
+    0: 'empty',
+    1: 'modern-hero',
+    2: 'modern-hero',
+    3: 'modern-hero',
+    4: 'modern-hero',
+    5: 'modern-hero'
+  }
+};
+
 const LAYOUT_OPTIONS = {
-  imageLayout: [
-    { value: 'feature', label: 'Feature + rail', icon: Image },
-    { value: 'mosaic', label: 'Mosaic', icon: LayoutGrid },
-    { value: 'stack', label: 'Stacked strips', icon: Plane }
-  ],
   commentPlacement: [
     { value: 'callout', label: 'Callout' },
     { value: 'below-title', label: 'Below title' },
@@ -122,7 +180,8 @@ export function App() {
       '--brand-secondary': guide.colors.secondary,
       '--quote-radius': `${guide.radius}px`,
       '--heading-font': `"${guide.typography.heading}", sans-serif`,
-      '--body-font': `"${guide.typography.body}", sans-serif`
+      '--body-font': `"${guide.typography.body}", sans-serif`,
+      ...createNeutralTintVars(guide.colors.secondary)
     }),
     [guide]
   );
@@ -203,7 +262,7 @@ export function App() {
 
   function randomizeLayout() {
     setLayout((current) => ({
-      imageLayout: nextRandomValue(LAYOUT_OPTIONS.imageLayout, current.imageLayout),
+      imageStyle: nextRandomValue(IMAGE_STYLE_OPTIONS, current.imageStyle),
       commentPlacement: nextRandomValue(LAYOUT_OPTIONS.commentPlacement, current.commentPlacement),
       itineraryStyle: nextRandomValue(LAYOUT_OPTIONS.itineraryStyle, current.itineraryStyle),
       dataStyle: nextRandomValue(LAYOUT_OPTIONS.dataStyle, current.dataStyle)
@@ -318,11 +377,9 @@ export function App() {
                   buttonStyle={guide.buttonStyle}
                   updateGuide={updateGuide}
                 />
-                <LayoutControl
-                  label="Image layout"
-                  value={layout.imageLayout}
-                  options={LAYOUT_OPTIONS.imageLayout}
-                  onChange={(value) => setLayout((current) => ({ ...current, imageLayout: value }))}
+                <ImageStyleControl
+                  value={layout.imageStyle}
+                  onChange={(value) => setLayout((current) => ({ ...current, imageStyle: value }))}
                 />
                 <LayoutControl
                   label="Comments"
@@ -520,6 +577,47 @@ function LayoutControl({ label, value, options, onChange }) {
   );
 }
 
+function ImageStyleControl({ value, onChange }) {
+  return (
+    <div className="control-group image-style-control">
+      <span>Image layout style</span>
+      <div className="image-style-options">
+        {IMAGE_STYLE_OPTIONS.map((option) => {
+          const Icon = option.icon;
+
+          return (
+            <button
+              key={option.value}
+              className={value === option.value ? 'image-style-option active' : 'image-style-option'}
+              type="button"
+              onClick={() => onChange(option.value)}
+            >
+              <span>
+                <Icon size={15} />
+                {option.label}
+              </span>
+              <ImageStylePreview styleName={option.value} />
+              <small>{option.description}</small>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function ImageStylePreview({ styleName }) {
+  return (
+    <div className={`wireframe-preview wireframe-${styleName}`} aria-hidden="true">
+      <span />
+      <span />
+      <span />
+      <span />
+      <span />
+    </div>
+  );
+}
+
 function QuotePreview({ guide, layout, style }) {
   return (
     <aside className="quote-preview-shell">
@@ -569,7 +667,7 @@ function QuotePreview({ guide, layout, style }) {
 function AircraftOption({ option, index, layout, buttonStyle }) {
   return (
     <article className="aircraft-option">
-      <AircraftImages images={option.images} title={option.title} layout={layout.imageLayout} />
+      <AircraftImages images={option.images} title={option.title} styleName={layout.imageStyle} />
 
       <div className="option-content">
         <div className="option-heading">
@@ -612,49 +710,89 @@ function AircraftOption({ option, index, layout, buttonStyle }) {
   );
 }
 
-function AircraftImages({ images, title, layout }) {
-  if (layout === 'mosaic') {
+function AircraftImages({ images, title, styleName }) {
+  const visibleImages = images.slice(0, 5);
+  const pattern = resolveImagePattern(styleName, visibleImages.length);
+  const [featuredImage, ...thumbnailImages] = visibleImages;
+
+  if (pattern === 'empty') {
     return (
-      <div className="aircraft-images mosaic-layout">
-        {images.map((image, index) => (
-          <AircraftVisual key={`${image.kind}-${index}`} image={image} title={title} />
-        ))}
+      <div className="aircraft-images image-layout-empty">
+        <div className="image-empty-state">
+          <Plane size={24} />
+          <span>Images pending</span>
+        </div>
       </div>
     );
   }
 
-  if (layout === 'stack') {
+  if (pattern === 'hero-side' || pattern === 'hero-bottom' || pattern === 'hero-grid') {
     return (
-      <div className="aircraft-images stack-layout">
-        {images.map((image, index) => (
-          <AircraftVisual key={`${image.kind}-${index}`} image={image} title={title} />
-        ))}
+      <div className={`aircraft-images image-layout-${pattern}`} data-image-count={visibleImages.length}>
+        <AircraftVisual image={featuredImage} title={title} featured />
+        <div className="thumbnail-group">
+          {thumbnailImages.map((image, index) => (
+            <AircraftVisual key={`${image.kind}-${index}`} image={image} title={title} compact />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="aircraft-images feature-layout">
-      <AircraftVisual image={images[0]} title={title} featured />
-      <div>
-        {images.slice(1).map((image, index) => (
-          <AircraftVisual key={`${image.kind}-${index}`} image={image} title={title} />
-        ))}
-      </div>
+    <div className={`aircraft-images image-layout-${pattern}`} data-image-count={visibleImages.length}>
+      {visibleImages.map((image, index) => (
+        <AircraftVisual
+          key={`${image.kind}-${index}`}
+          image={image}
+          title={title}
+          featured={visibleImages.length === 1}
+        />
+      ))}
     </div>
   );
 }
 
-function AircraftVisual({ image, title, featured = false }) {
+function AircraftVisual({ image, title, featured = false, compact = false }) {
+  const hasPhoto = Boolean(image.src);
+
   return (
-    <div className={`aircraft-visual tone-${image.tone} ${featured ? 'featured' : ''}`}>
+    <div
+      className={`aircraft-visual tone-${image.tone} ${hasPhoto ? 'has-photo' : ''} ${featured ? 'is-featured' : ''} ${
+        compact ? 'is-thumbnail' : ''
+      }`}
+    >
+      {hasPhoto ? (
+        <img
+          className="aircraft-photo"
+          src={image.src}
+          alt={`${title} ${image.kind.toLowerCase()}`}
+          loading="lazy"
+          style={{ objectPosition: image.objectPosition || 'center' }}
+          onError={(event) => {
+            event.currentTarget.hidden = true;
+            event.currentTarget.closest('.aircraft-visual')?.classList.remove('has-photo');
+          }}
+        />
+      ) : null}
       <div className="aircraft-shape" aria-hidden="true">
         <span />
       </div>
       <p>{image.kind}</p>
       <strong>{title}</strong>
+      {image.credit && image.sourceUrl ? (
+        <a className="image-credit" href={image.sourceUrl} target="_blank" rel="noreferrer">
+          {image.credit}
+        </a>
+      ) : null}
     </div>
   );
+}
+
+function resolveImagePattern(styleName, imageCount) {
+  const normalizedCount = Math.min(Math.max(imageCount, 0), 5);
+  const styleMap = IMAGE_PATTERN_BY_STYLE[styleName] || IMAGE_PATTERN_BY_STYLE.showcase;
+  return styleMap[normalizedCount] || styleMap[5];
 }
 
 function Itinerary({ option, styleName }) {
@@ -748,6 +886,63 @@ function Comment({ text }) {
 function nextRandomValue(options, currentValue) {
   const candidates = options.map((option) => option.value).filter((value) => value !== currentValue);
   return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+function createNeutralTintVars(color) {
+  const { hue, saturation } = hexToHsl(color);
+  const mutedSaturation = Math.round(Math.min(saturation * 0.28, 12));
+
+  return {
+    '--quote-surface': `hsl(${hue} ${mutedSaturation}% 99%)`,
+    '--quote-surface-muted': `hsl(${hue} ${mutedSaturation}% 96%)`,
+    '--quote-surface-soft': `hsl(${hue} ${mutedSaturation}% 94%)`,
+    '--quote-border': `hsl(${hue} ${Math.min(mutedSaturation + 2, 14)}% 88%)`,
+    '--quote-border-strong': `hsl(${hue} ${Math.min(mutedSaturation + 3, 15)}% 82%)`,
+    '--quote-text': `hsl(${hue} 7% 17%)`,
+    '--quote-muted-text': `hsl(${hue} 6% 42%)`,
+    '--quote-shadow': `hsl(${hue} 12% 18% / 0.11)`
+  };
+}
+
+function hexToHsl(hex) {
+  const fallback = { hue: 220, saturation: 8, lightness: 50 };
+
+  if (!/^#[0-9A-F]{6}$/i.test(hex)) {
+    return fallback;
+  }
+
+  const r = Number.parseInt(hex.slice(1, 3), 16) / 255;
+  const g = Number.parseInt(hex.slice(3, 5), 16) / 255;
+  const b = Number.parseInt(hex.slice(5, 7), 16) / 255;
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  const lightness = (max + min) / 2;
+
+  if (max === min) {
+    return { hue: 220, saturation: 0, lightness: Math.round(lightness * 100) };
+  }
+
+  const delta = max - min;
+  const saturation = lightness > 0.5 ? delta / (2 - max - min) : delta / (max + min);
+  let hue;
+
+  switch (max) {
+    case r:
+      hue = (g - b) / delta + (g < b ? 6 : 0);
+      break;
+    case g:
+      hue = (b - r) / delta + 2;
+      break;
+    default:
+      hue = (r - g) / delta + 4;
+      break;
+  }
+
+  return {
+    hue: Math.round(hue * 60),
+    saturation: Math.round(saturation * 100),
+    lightness: Math.round(lightness * 100)
+  };
 }
 
 function normalizeHexForInput(value) {

@@ -35,7 +35,10 @@ app.post('/api/analyze', async (req, res) => {
 });
 
 const vite = await createViteServer({
-  server: { middlewareMode: true },
+  server: {
+    middlewareMode: true,
+    hmr: { port: port + 1 }
+  },
   appType: 'spa'
 });
 

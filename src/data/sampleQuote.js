@@ -1,3 +1,6 @@
+const commonsImage = (fileName, width = 1200) =>
+  `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(fileName)}?width=${width}`;
+
 export const sampleQuote = {
   broker: 'Northstar Aviation',
   client: 'Avery Laurent',
@@ -27,9 +30,41 @@ export const sampleQuote = {
       ],
       amenities: ['Wi-Fi', 'Full galley', 'Private aft suite', 'Conference table'],
       images: [
-        { kind: 'Exterior', tone: 'silver' },
-        { kind: 'Cabin', tone: 'cabin' },
-        { kind: 'Floorplan', tone: 'plan' }
+        {
+          kind: 'Exterior',
+          tone: 'silver',
+          src: commonsImage('Gulfstream G650.JPG'),
+          credit: 'TeWeBs, CC BY-SA 4.0',
+          sourceUrl: 'https://commons.wikimedia.org/wiki/File:Gulfstream_G650.JPG'
+        },
+        {
+          kind: 'Cabin',
+          tone: 'cabin',
+          src: commonsImage('Gulfstream G650ER, EBACE 2018, Le Grand-Saconnex (BL7C0740).jpg'),
+          credit: 'Matti Blume, CC BY-SA 4.0',
+          sourceUrl:
+            'https://commons.wikimedia.org/wiki/File:Gulfstream_G650ER,_EBACE_2018,_Le_Grand-Saconnex_(BL7C0740).jpg',
+          objectPosition: 'center 54%'
+        },
+        { kind: 'Floorplan', tone: 'plan' },
+        {
+          kind: 'Galley',
+          tone: 'cream',
+          src: commonsImage('Gulfstream G650ER, EBACE 2018, Le Grand-Saconnex (BL7C0753).jpg'),
+          credit: 'Matti Blume, CC BY-SA 4.0',
+          sourceUrl:
+            'https://commons.wikimedia.org/wiki/File:Gulfstream_G650ER,_EBACE_2018,_Le_Grand-Saconnex_(BL7C0753).jpg',
+          objectPosition: 'center 58%'
+        },
+        {
+          kind: 'Seating',
+          tone: 'warm',
+          src: commonsImage('Gulfstream G650ER, EBACE 2018, Le Grand-Saconnex (BL7C0741).jpg'),
+          credit: 'Matti Blume, CC BY-SA 4.0',
+          sourceUrl:
+            'https://commons.wikimedia.org/wiki/File:Gulfstream_G650ER,_EBACE_2018,_Le_Grand-Saconnex_(BL7C0741).jpg',
+          objectPosition: 'center 54%'
+        }
       ]
     },
     {
@@ -53,9 +88,30 @@ export const sampleQuote = {
       ],
       amenities: ['Wi-Fi', 'Divan seating', 'Enclosed lavatory'],
       images: [
-        { kind: 'Exterior', tone: 'dark' },
-        { kind: 'Cabin', tone: 'warm' },
-        { kind: 'Floorplan', tone: 'plan' }
+        {
+          kind: 'Exterior',
+          tone: 'dark',
+          src: commonsImage('BOMBARDIER GLOBAL 6000.jpg'),
+          credit: 'Simon Butler, CC BY-SA 4.0',
+          sourceUrl: 'https://commons.wikimedia.org/wiki/File:BOMBARDIER_GLOBAL_6000.jpg'
+        },
+        {
+          kind: 'Cabin',
+          tone: 'warm',
+          src: commonsImage('Bombardier Global 6000 interior 2.JPG'),
+          credit: 'JetRequest.com, CC BY-SA 3.0',
+          sourceUrl: 'https://commons.wikimedia.org/wiki/File:Bombardier_Global_6000_interior_2.JPG',
+          objectPosition: 'center 58%'
+        },
+        { kind: 'Floorplan', tone: 'plan' },
+        {
+          kind: 'Galley',
+          tone: 'cream',
+          src: commonsImage('Bombardier Global 6000 galley.JPG'),
+          credit: 'JetRequest.com, CC BY-SA 3.0',
+          sourceUrl: 'https://commons.wikimedia.org/wiki/File:Bombardier_Global_6000_galley.JPG',
+          objectPosition: 'center 56%'
+        }
       ]
     },
     {
@@ -79,8 +135,21 @@ export const sampleQuote = {
       ],
       amenities: ['Wi-Fi', 'Hot catering', 'Forward galley'],
       images: [
-        { kind: 'Exterior', tone: 'blue' },
-        { kind: 'Cabin', tone: 'cream' }
+        {
+          kind: 'Exterior',
+          tone: 'blue',
+          src: commonsImage('Dassault Falcon 7X.jpg'),
+          credit: 'Dmitry A. Mottl, public domain',
+          sourceUrl: 'https://commons.wikimedia.org/wiki/File:Dassault_Falcon_7X.jpg'
+        },
+        {
+          kind: 'Cabin',
+          tone: 'cream',
+          src: commonsImage('Dassault Falcon 7X forward cabin interior.JPG'),
+          credit: 'JetRequest.com, CC BY-SA 3.0',
+          sourceUrl: 'https://commons.wikimedia.org/wiki/File:Dassault_Falcon_7X_forward_cabin_interior.JPG',
+          objectPosition: 'center 56%'
+        }
       ]
     }
   ]
