@@ -169,7 +169,7 @@ main {
 .eyebrow,
 .quote-kicker {
   margin: 0 0 10px;
-  color: #7b6048;
+  color: var(--quote-muted-text, #62676f);
   font-size: 0.76rem;
   font-weight: 800;
   letter-spacing: 0;
@@ -846,7 +846,7 @@ select:focus {
   overflow: hidden;
   border: 0;
   border-radius: 0;
-  background: #f5f2ec;
+  background: var(--quote-surface, #f7f7f7);
   box-shadow: none;
   color: var(--quote-text, #22252a);
   font-family: var(--body-font);
@@ -1494,8 +1494,8 @@ select:focus {
   padding: 16px 18px;
   border-left: 4px solid var(--brand-secondary);
   border-radius: calc(var(--quote-radius) * 0.7);
-  background: color-mix(in srgb, var(--brand-secondary), white 88%);
-  color: #4f545a;
+  background: var(--quote-surface-muted, #f3f4f6);
+  color: var(--quote-muted-text, #4f545a);
   line-height: 1.65;
 }
 

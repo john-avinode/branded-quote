@@ -1161,18 +1161,22 @@ function nextRandomValue(options, currentValue) {
 }
 
 function createNeutralTintVars(color) {
-  const { hue, saturation } = hexToHsl(color);
-  const mutedSaturation = Math.round(Math.min(saturation * 0.28, 12));
+  const { hue, saturation, lightness } = hexToHsl(color);
+  const neutralChroma = Math.round(Math.min(saturation * 0.07, 3));
+  const borderChroma = Math.min(neutralChroma + 1, 5);
+  const textChroma = Math.min(neutralChroma + 1, 4);
+  const shadowChroma = Math.min(neutralChroma + 2, 6);
+  const lightnessBias = Math.round(Math.max(-2, Math.min(1, (lightness - 55) / 26)));
 
   return {
-    '--quote-surface': `hsl(${hue} ${mutedSaturation}% 99%)`,
-    '--quote-surface-muted': `hsl(${hue} ${mutedSaturation}% 96%)`,
-    '--quote-surface-soft': `hsl(${hue} ${mutedSaturation}% 94%)`,
-    '--quote-border': `hsl(${hue} ${Math.min(mutedSaturation + 2, 14)}% 88%)`,
-    '--quote-border-strong': `hsl(${hue} ${Math.min(mutedSaturation + 3, 15)}% 82%)`,
-    '--quote-text': `hsl(${hue} 7% 17%)`,
-    '--quote-muted-text': `hsl(${hue} 6% 42%)`,
-    '--quote-shadow': `hsl(${hue} 12% 18% / 0.11)`
+    '--quote-surface': `hsl(${hue} ${neutralChroma}% ${Math.min(99, 98 + lightnessBias)}%)`,
+    '--quote-surface-muted': `hsl(${hue} ${neutralChroma}% ${Math.min(97, 95 + lightnessBias)}%)`,
+    '--quote-surface-soft': `hsl(${hue} ${neutralChroma}% ${Math.min(95, 93 + lightnessBias)}%)`,
+    '--quote-border': `hsl(${hue} ${borderChroma}% ${Math.min(89, 87 + lightnessBias)}%)`,
+    '--quote-border-strong': `hsl(${hue} ${borderChroma}% ${Math.min(83, 81 + lightnessBias)}%)`,
+    '--quote-text': `hsl(${hue} ${textChroma}% 17%)`,
+    '--quote-muted-text': `hsl(${hue} ${textChroma}% 42%)`,
+    '--quote-shadow': `hsl(${hue} ${shadowChroma}% 18% / 0.11)`
   };
 }
 
