@@ -1,6 +1,6 @@
 import express from 'express';
 import { createServer as createViteServer } from 'vite';
-import { analyzeBrand } from './analyzeBrand.mjs';
+import { analyzeBrand } from './analyzeBrand.ts';
 
 const port = Number(process.env.PORT || 5173);
 const app = express();

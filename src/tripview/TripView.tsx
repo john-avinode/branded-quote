@@ -16,10 +16,26 @@ import {
 } from 'lucide-react';
 import './tripview.css';
 
+type CSSVariableStyle = React.CSSProperties & Record<`--${string}`, string | number>;
+
+type TripCard = {
+  id: string;
+  name: string;
+  route: string;
+  date: string;
+  source: string;
+  sourceIcon: 'globe';
+  updatedAt: string;
+  tripId?: string;
+  avatar?: string;
+  hasMessage?: boolean;
+  active?: boolean;
+};
+
 const FIGMA_LOGO_URL = 'https://www.figma.com/api/mcp/asset/8f265cf0-c0f0-41d9-b452-d9134e3ecdd5';
 const MAP_BG_URL = 'https://www.figma.com/api/mcp/asset/991badd3-2cf8-4912-9680-3b2683c0df44';
 
-const tripCards = [
+const tripCards: TripCard[] = [
   {
     id: '1',
     name: 'brad pitt',
@@ -53,7 +69,7 @@ const tripCards = [
   }
 ];
 
-function NavItem({ label }) {
+function NavItem({ label }: { label: string }) {
   return (
     <span className="tv-nav-item">
       {label}
@@ -62,7 +78,7 @@ function NavItem({ label }) {
   );
 }
 
-export function TripView({ onSetup }) {
+export function TripView({ onSetup }: { onSetup: () => void }) {
   return (
     <div className="trip-page">
       <header className="tv-topbar">
@@ -147,7 +163,7 @@ export function TripView({ onSetup }) {
         </aside>
 
         <section className="tv-main">
-          <div className="tv-map" style={{ '--tv-map-image': `url(${MAP_BG_URL})` }}>
+          <div className="tv-map" style={{ '--tv-map-image': `url(${MAP_BG_URL})` } as CSSVariableStyle}>
             <button className="tv-close" type="button" aria-label="Close">
               ×
             </button>

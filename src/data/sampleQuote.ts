@@ -4,6 +4,7 @@ const commonsImage = (fileName, width = 1200) =>
 export const sampleQuote = {
   broker: 'Northstar Aviation',
   client: 'Avery Laurent',
+  passengers: 3,
   route: 'London Luton to Nice Cote d Azur',
   note:
     'Aircraft below are available for the requested departure window. Final availability is subject to owner approval and crew confirmation.',
@@ -77,6 +78,7 @@ export const sampleQuote = {
       flightTime: '2h 00m',
       itinerary: [
         { label: 'Depart', airport: 'London Luton', code: 'LTN', time: '11:45' },
+        { label: 'Tech stop', airport: 'Geneva', code: 'GVA', time: '13:05', flightTime: '1h 20m' },
         { label: 'Arrive', airport: 'Nice Cote d Azur', code: 'NCE', time: '14:45' }
       ],
       data: [

@@ -1,8 +1,7 @@
 import {
-  ArrowRight,
   BadgeCheck,
   ChevronDown,
-  Clock3,
+  ChevronRight,
   Expand,
   Image,
   Images,
@@ -11,8 +10,9 @@ import {
   Rows3,
   Palette,
   Plane,
+  PlaneLanding,
+  PlaneTakeoff,
   RefreshCcw,
-  Route,
   Shuffle,
   PanelsTopLeft,
   Type,
@@ -20,8 +20,10 @@ import {
   Wand2
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { sampleQuote } from './data/sampleQuote.js';
-import { TripView } from './tripview/TripView.jsx';
+import { sampleQuote } from './data/sampleQuote';
+import { TripView } from './tripview/TripView';
+
+type CSSVariableStyle = React.CSSProperties & Record<`--${string}`, string | number>;
 
 const GOOGLE_FONT_CHOICES = [
   'Inter',
@@ -281,40 +283,6 @@ export function App() {
       {fontImport ? <link href={fontImport} rel="stylesheet" /> : null}
       <div className="app-shell">
         <main>
-          <section className="analyze-bar">
-            <div className="analyze-title">
-              <Wand2 size={18} />
-              <div>
-                <h1>Quote customizer</h1>
-                <p>Analyze a broker website and tune the client-facing quote.</p>
-              </div>
-            </div>
-
-            <form className="analyze-panel" onSubmit={analyzeWebsite}>
-              <label htmlFor="website-url">Website</label>
-              <div className="url-row">
-                <input
-                  id="website-url"
-                  value={url}
-                  onChange={(event) => setUrl(event.target.value)}
-                  placeholder="vistajet.com"
-                  inputMode="url"
-                />
-                <button className="primary-action" type="submit" disabled={isAnalyzing}>
-                  {isAnalyzing ? <Loader2 className="spin" size={18} /> : <Wand2 size={18} />}
-                  {isAnalyzing ? 'Analyzing' : 'Analyze'}
-                </button>
-              </div>
-              {error ? <p className="error-message">{error}</p> : null}
-            </form>
-
-            <div className="analysis-status">
-              <BadgeCheck size={16} />
-              <span>{Math.round(guide.confidence * 100)}%</span>
-              <span>{guide.sourceUrl || 'Awaiting analysis'}</span>
-            </div>
-          </section>
-
           <div className="mobile-workspace-toggle" role="tablist" aria-label="Workspace view">
             <button
               className={mobileWorkspaceView === 'editor' ? 'active' : ''}
@@ -347,6 +315,16 @@ export function App() {
                     Surprise
                   </button>
                 }
+              />
+
+              <AnalyzeBrandEntry
+                url={url}
+                setUrl={setUrl}
+                isAnalyzing={isAnalyzing}
+                error={error}
+                confidence={guide.confidence}
+                sourceUrl={guide.sourceUrl}
+                onSubmit={analyzeWebsite}
               />
 
               <BrandKitCard guide={guide} updateGuide={updateGuide} />
@@ -451,6 +429,40 @@ function SectionHeader({ icon: Icon, title, action }) {
   );
 }
 
+function AnalyzeBrandEntry({ url, setUrl, isAnalyzing, error, confidence, sourceUrl, onSubmit }) {
+  return (
+    <section className="brand-analyze-card">
+      <div className="brand-analyze-copy">
+        <h3>Bring your branding from your website</h3>
+      </div>
+
+      <form className="brand-analyze-form" onSubmit={onSubmit}>
+        <label htmlFor="website-url">Website</label>
+        <div className="url-row">
+          <input
+            id="website-url"
+            value={url}
+            onChange={(event) => setUrl(event.target.value)}
+            placeholder="vistajet.com"
+            inputMode="url"
+          />
+          <button className="primary-action" type="submit" disabled={isAnalyzing}>
+            {isAnalyzing ? <Loader2 className="spin" size={18} /> : <Wand2 size={18} />}
+            {isAnalyzing ? 'Analyzing' : 'Analyze'}
+          </button>
+        </div>
+        {error ? <p className="error-message">{error}</p> : null}
+      </form>
+
+      <div className="brand-analyze-status">
+        <BadgeCheck size={16} />
+        <span>{Math.round(confidence * 100)}% confidence</span>
+        <span>{sourceUrl || 'Awaiting website analysis'}</span>
+      </div>
+    </section>
+  );
+}
+
 function BrandKitCard({ guide, updateGuide }) {
   return (
     <div className="panel brand-kit-card">
@@ -497,7 +509,7 @@ function BrandKitCard({ guide, updateGuide }) {
 
 function ColorCard({ label, value, onChange }) {
   return (
-    <div className="color-card" style={{ '--swatch': value }}>
+    <div className="color-card" style={{ '--swatch': value } as CSSVariableStyle}>
       <div className="color-card-top">
         <span>{label}</span>
         <Palette size={18} />
@@ -622,7 +634,10 @@ function SmartLogo({
   }, [brandPrimary, brandSecondary, logoUrl, variant]);
 
   return (
-    <div className={`${className} logo-bg-${resolvedBackground}`} style={{ '--logo-brand-bg': brandSecondary }}>
+    <div
+      className={`${className} logo-bg-${resolvedBackground}`}
+      style={{ '--logo-brand-bg': brandSecondary } as CSSVariableStyle}
+    >
       {logoUrl ? <img src={logoUrl} alt={`${brandName} logo`} /> : <Plane size={iconSize} />}
     </div>
   );
@@ -951,62 +966,164 @@ function resolveImagePattern(styleName, imageCount) {
 }
 
 function Itinerary({ option, styleName }) {
+  const legs = getItineraryLegs(option);
+
   if (styleName === 'compact') {
     return (
-      <div className="itinerary compact-itinerary">
-        <Route size={16} />
-        <span>
-          {option.itinerary[0].code} {option.itinerary[0].time}
-        </span>
-        <ArrowRight size={14} />
-        <span>
-          {option.itinerary[1].code} {option.itinerary[1].time}
-        </span>
-        <Clock3 size={16} />
-        <span>{option.flightTime}</span>
+      <div className="itinerary itinerary-compact-line">
+        {legs.map((leg, index) => (
+          <React.Fragment key={`${leg.departure.code}-${leg.arrival.code}-${index}`}>
+            <span>
+              <strong>{leg.departure.code}</strong>
+              {leg.departure.time ? ` ${leg.departure.time}` : ''}
+            </span>
+            <ChevronRight size={14} />
+            <span>
+              <strong>{leg.arrival.code}</strong>
+              {leg.arrival.time ? ` ${leg.arrival.time}` : ''}
+            </span>
+            {leg.totalTime ? <em>{leg.totalTime}</em> : null}
+          </React.Fragment>
+        ))}
       </div>
     );
   }
 
   if (styleName === 'route-card') {
     return (
-      <div className="itinerary route-cards">
-        {option.itinerary.map((stop) => (
-          <div key={stop.label}>
-            <p>{stop.label}</p>
-            <strong>{stop.code}</strong>
-            <span>{stop.airport}</span>
-            <em>{stop.time}</em>
+      <div className="itinerary itinerary-route-cards">
+        {legs.map((leg, index) => (
+          <div className="itinerary-route-card" key={`${leg.departure.code}-${leg.arrival.code}-${index}`}>
+            {legs.length > 1 ? <p className="itinerary-leg-label">Leg {index + 1}</p> : null}
+            <div className="route-card-codes">
+              <strong>{leg.departure.code}</strong>
+              <ChevronRight size={16} />
+              <strong>{leg.arrival.code}</strong>
+            </div>
+            <div className="route-card-meta">
+              <span>{leg.departure.city}</span>
+              <span>{leg.arrival.city}</span>
+            </div>
+            <div className="route-card-footer">
+              <span>{leg.departure.time || leg.departure.date}</span>
+              <span>{leg.totalTime || 'Time pending'}</span>
+            </div>
           </div>
         ))}
-        <div>
-          <p>Flight time</p>
-          <strong>{option.flightTime}</strong>
-          <span>{option.departureDate}</span>
-        </div>
       </div>
     );
   }
 
   return (
-    <div className="itinerary timeline">
-      {option.itinerary.map((stop) => (
-        <div key={stop.label}>
-          <span className="timeline-dot" />
-          <p>{stop.label}</p>
-          <strong>{stop.code}</strong>
-          <span>{stop.airport}</span>
-          <em>{stop.time}</em>
-        </div>
+    <div className={`itinerary itinerary-card itinerary-${styleName}`}>
+      {legs.map((leg, index) => (
+        <ItineraryLeg
+          key={`${leg.departure.code}-${leg.arrival.code}-${index}`}
+          leg={leg}
+          index={index}
+          totalLegs={legs.length}
+        />
       ))}
-      <div>
-        <Clock3 size={16} />
-        <p>Flight time</p>
-        <strong>{option.flightTime}</strong>
-        <span>{option.departureDate}</span>
+    </div>
+  );
+}
+
+function ItineraryLeg({ leg, index, totalLegs }) {
+  return (
+    <div className="itinerary-leg">
+      {totalLegs > 1 ? <p className="itinerary-leg-label">Leg {index + 1}</p> : null}
+      <div className="itinerary-route-row">
+        <AirportBlock stop={leg.departure} align="start" />
+        <div className="itinerary-route-visual" aria-hidden="true">
+          <span />
+          <ChevronRight size={15} />
+          <span />
+        </div>
+        <AirportBlock stop={leg.arrival} align="end" />
+      </div>
+
+      <div className="itinerary-detail-row">
+        <TimeBlock
+          icon={PlaneTakeoff}
+          label="Departure"
+          date={leg.departure.date}
+          time={leg.departure.time}
+          align="start"
+        />
+        <div className="itinerary-pax">
+          <strong>PAX:</strong>
+          <span>{leg.pax}</span>
+          {leg.totalTime ? <em>{leg.totalTime}</em> : null}
+        </div>
+        <TimeBlock icon={PlaneLanding} label="Arrival" date={leg.arrival.date} time={leg.arrival.time} align="end" />
       </div>
     </div>
   );
+}
+
+function AirportBlock({ stop, align }) {
+  return (
+    <div className={`itinerary-airport itinerary-align-${align}`}>
+      <strong>{stop.code}</strong>
+      <span>{stop.city}</span>
+      {stop.region ? <span>{stop.region}</span> : null}
+    </div>
+  );
+}
+
+function TimeBlock({ icon: Icon, label, date, time, align }) {
+  return (
+    <div className={`itinerary-time itinerary-align-${align}`}>
+      <div>
+        <Icon size={15} />
+        <strong>{label}</strong>
+      </div>
+      {date ? <span>{date}</span> : null}
+      {time ? <span>{time}</span> : null}
+    </div>
+  );
+}
+
+function getItineraryLegs(option) {
+  if (Array.isArray(option.legs) && option.legs.length > 0) {
+    return option.legs.map((leg, index) => ({
+      departure: normalizeItineraryStop(leg.departure, option.departureDate),
+      arrival: normalizeItineraryStop(leg.arrival, leg.arrivalDate || option.departureDate),
+      pax: String(leg.pax || option.pax || sampleQuote.passengers || 3),
+      totalTime: leg.totalTime || leg.flightTime || (option.legs.length === 1 ? option.flightTime : '')
+    }));
+  }
+
+  const stops = option.itinerary || [];
+
+  if (stops.length <= 1) {
+    const stop = normalizeItineraryStop(stops[0] || {}, option.departureDate);
+    return [
+      {
+        departure: stop,
+        arrival: normalizeItineraryStop({}, option.departureDate),
+        pax: String(option.pax || sampleQuote.passengers || 3),
+        totalTime: option.flightTime
+      }
+    ];
+  }
+
+  return stops.slice(0, -1).map((departure, index) => ({
+    departure: normalizeItineraryStop(departure, departure.date || option.departureDate),
+    arrival: normalizeItineraryStop(stops[index + 1], stops[index + 1].date || option.departureDate),
+    pax: String(option.pax || sampleQuote.passengers || 3),
+    totalTime: stops.length === 2 ? option.flightTime : departure.flightTime || stops[index + 1].flightTime || ''
+  }));
+}
+
+function normalizeItineraryStop(stop: any = {}, fallbackDate = '') {
+  return {
+    code: stop.code || 'TBD',
+    city: stop.city || stop.airport || 'Airport pending',
+    region: stop.region || stop.country || '',
+    date: stop.date || fallbackDate,
+    time: stop.time || ''
+  };
 }
 
 function AircraftData({ option, styleName }) {

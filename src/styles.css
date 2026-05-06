@@ -120,6 +120,52 @@ main {
   line-height: 1.35;
 }
 
+.brand-analyze-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid #dfe5ef;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 18px rgba(25, 33, 46, 0.04);
+}
+
+.brand-analyze-copy {
+  display: block;
+}
+
+.brand-analyze-copy h3 {
+  margin: 0;
+  color: #172033;
+  font-size: 1rem;
+  line-height: 1.2;
+}
+
+.brand-analyze-form {
+  display: grid;
+  gap: 8px;
+}
+
+.brand-analyze-form label {
+  color: #3c4147;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.brand-analyze-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  color: #5d6674;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.brand-analyze-status svg {
+  color: #37a66a;
+}
+
 .eyebrow,
 .quote-kicker {
   margin: 0 0 10px;
@@ -517,8 +563,8 @@ select:focus {
 .controls-panel {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 12px;
+  gap: 18px 16px;
+  padding: 16px;
   border-color: #e7eaf0;
   border-radius: 12px;
   background:
@@ -1460,76 +1506,229 @@ select:focus {
   color: var(--quote-text, #3e434a);
 }
 
-.timeline {
+.itinerary-card {
+  overflow: hidden;
+  border: 1px solid var(--quote-border, #e2e4e7);
+  border-radius: calc(var(--quote-radius) * 0.82);
+  background: #ffffff;
+}
+
+.itinerary-leg {
   display: grid;
-  grid-template-columns: 1fr 1fr 0.72fr;
+  gap: 18px;
+  padding: 20px 22px 22px;
+  border-bottom: 1px solid var(--quote-border, #e2e4e7);
+}
+
+.itinerary-leg:last-child {
+  border-bottom: 0;
+}
+
+.itinerary-leg-label {
+  margin: 0;
+  color: var(--quote-muted-text, #85898f);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.itinerary-route-row,
+.itinerary-detail-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+.itinerary-route-visual {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 86px;
+  padding-top: 14px;
+  color: var(--quote-muted-text, #767676);
+}
+
+.itinerary-route-visual span {
+  width: 32px;
+  border-top: 1px dashed currentColor;
+}
+
+.itinerary-route-visual svg {
+  margin: 0 4px;
+  color: var(--quote-text, #22252a);
+}
+
+.itinerary-airport,
+.itinerary-time {
+  display: grid;
+  min-width: 0;
+  color: var(--quote-text, #22252a);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.itinerary-airport {
+  gap: 3px;
+}
+
+.itinerary-airport strong {
+  overflow: hidden;
+  font-size: 1.24rem;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.itinerary-airport span {
+  overflow: hidden;
+  font-size: 0.82rem;
+  line-height: 1.42;
+  text-overflow: ellipsis;
+}
+
+.itinerary-time {
+  gap: 4px;
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.itinerary-time > div {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 2px;
+}
+
+.itinerary-time svg {
+  color: var(--brand-secondary);
+}
+
+.itinerary-time strong,
+.itinerary-pax strong {
+  font-weight: 900;
+}
+
+.itinerary-pax {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0 5px;
+  justify-content: center;
+  min-width: 88px;
+  color: var(--quote-text, #22252a);
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82rem;
+  line-height: 1.35;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.itinerary-pax em {
+  grid-column: 1 / -1;
+  color: var(--quote-muted-text, #62676f);
+  font-size: 0.76rem;
+  font-style: normal;
+}
+
+.itinerary-align-start {
+  justify-items: start;
+  text-align: left;
+}
+
+.itinerary-align-end {
+  justify-items: end;
+  text-align: right;
+}
+
+.itinerary-route-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(156px, 1fr));
   gap: 14px;
 }
 
-.timeline > div,
-.route-cards > div {
-  position: relative;
+.itinerary-route-card {
+  display: grid;
+  gap: 12px;
   padding: 16px;
   border: 1px solid var(--quote-border, #e2e4e7);
   border-radius: calc(var(--quote-radius) * 0.82);
   background: var(--quote-surface, #fbfcfd);
 }
 
-.timeline-dot {
-  position: absolute;
-  top: 17px;
-  right: 13px;
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  background: var(--brand-secondary);
+.route-card-codes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--quote-text, #22252a);
 }
 
-.timeline p,
-.route-cards p {
-  margin: 0 0 7px;
-  color: var(--quote-muted-text, #85898f);
-  font-size: 0.72rem;
-  font-weight: 850;
-  text-transform: uppercase;
+.route-card-codes strong {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 1.18rem;
+  letter-spacing: 0.01em;
 }
 
-.timeline strong,
-.route-cards strong {
-  display: block;
-  font-size: 1.2rem;
+.route-card-codes svg {
+  flex: 0 0 auto;
+  color: var(--brand-secondary);
 }
 
-.timeline span,
-.route-cards span,
-.route-cards em,
-.timeline em {
-  display: block;
-  margin-top: 4px;
-  color: var(--quote-muted-text, #62676f);
-  font-size: 0.84rem;
-  font-style: normal;
-}
-
-.route-cards {
+.route-card-meta,
+.route-card-footer {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.compact-itinerary {
+.route-card-meta span {
+  color: var(--quote-muted-text, #62676f);
+  font-size: 0.78rem;
+  line-height: 1.35;
+}
+
+.route-card-meta span:last-child,
+.route-card-footer span:last-child {
+  text-align: right;
+}
+
+.route-card-footer {
+  padding-top: 10px;
+  border-top: 1px solid var(--quote-border, #e2e4e7);
+  color: var(--quote-text, #22252a);
+  font-size: 0.76rem;
+  font-weight: 850;
+}
+
+.itinerary-compact-line {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 9px;
   align-items: center;
-  padding: 15px 17px;
+  padding: 14px 16px;
   border-radius: calc(var(--quote-radius) * 0.82);
   background: var(--quote-surface-muted, #f3f4f6);
-  font-weight: 800;
+  color: var(--quote-text, #22252a);
+  font-size: 0.82rem;
 }
 
-.compact-itinerary svg {
+.itinerary-compact-line strong {
+  font-family: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.itinerary-compact-line svg {
   color: var(--brand-secondary);
+}
+
+.itinerary-compact-line em {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--quote-muted-text, #62676f);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 850;
 }
 
 .aircraft-data {
@@ -1716,10 +1915,41 @@ select:focus {
   .image-layout-two-up,
   .image-layout-hero-side,
   .image-layout-hero-grid,
-  .timeline,
-  .route-cards,
+  .itinerary-route-row,
+  .itinerary-detail-row,
+  .route-card-meta,
+  .route-card-footer,
   .aircraft-data {
     grid-template-columns: 1fr;
+  }
+
+  .itinerary-route-row,
+  .itinerary-detail-row {
+    gap: 14px;
+  }
+
+  .itinerary-route-visual {
+    min-width: 0;
+    padding: 0;
+  }
+
+  .itinerary-route-visual span {
+    width: 44%;
+  }
+
+  .itinerary-pax {
+    justify-content: start;
+    text-align: left;
+  }
+
+  .itinerary-align-end {
+    justify-items: start;
+    text-align: left;
+  }
+
+  .route-card-meta span:last-child,
+  .route-card-footer span:last-child {
+    text-align: left;
   }
 
   .color-card {
