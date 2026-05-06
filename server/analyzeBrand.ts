@@ -36,7 +36,14 @@ const FALLBACK_RESULT = {
 
 export async function analyzeBrand(inputUrl) {
   const targetUrl = normalizeUrl(inputUrl);
-  const html = await fetchText(targetUrl);
+  let html;
+
+  try {
+    html = await fetchText(targetUrl);
+  } catch (error) {
+    return createFetchFallback(targetUrl, error);
+  }
+
   const $ = cheerio.load(html);
   const base = new URL(targetUrl);
 
@@ -99,6 +106,36 @@ export async function analyzeBrand(inputUrl) {
     }),
     notes
   };
+}
+
+function createFetchFallback(targetUrl, error) {
+  const base = new URL(targetUrl);
+  const hostName = base.hostname.replace(/^www\./i, '');
+  const brandName = hostName
+    .split('.')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+  return {
+    ...FALLBACK_RESULT,
+    sourceUrl: targetUrl,
+    brandName: brandName || FALLBACK_RESULT.brandName,
+    confidence: 0.18,
+    notes: [
+      `Unable to fetch the website directly (${formatFetchError(error)}). Started from editable defaults.`,
+      'Some websites block server-side scraping; paste logo and colors manually if needed.'
+    ]
+  };
+}
+
+function formatFetchError(error) {
+  if (error instanceof Error) {
+    return error.name === 'AbortError' ? 'request timed out' : error.message;
+  }
+
+  return 'request failed';
 }
 
 function normalizeUrl(inputUrl) {
