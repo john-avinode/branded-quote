@@ -63,11 +63,39 @@ const DEFAULT_GUIDE = {
 };
 
 const DEFAULT_LAYOUT = {
+  coverStyle: 'clean',
   imageStyle: 'showcase',
   commentPlacement: 'callout',
   itineraryStyle: 'timeline',
   dataStyle: 'grid'
 };
+
+const COVER_STYLE_OPTIONS = [
+  {
+    value: 'clean',
+    label: 'Classic',
+    icon: LayoutGrid,
+    description: 'Compact branded header with intro below.'
+  },
+  {
+    value: 'image-cover',
+    label: 'Visual Cover',
+    icon: Image,
+    description: 'Large visual opener using the first aircraft image.'
+  },
+  {
+    value: 'letterhead',
+    label: 'Letterhead',
+    icon: Type,
+    description: 'White proposal header with a refined brand line.'
+  },
+  {
+    value: 'solid',
+    label: 'Statement',
+    icon: Palette,
+    description: 'Bold brand-color cover without photography.'
+  }
+];
 
 const IMAGE_STYLE_OPTIONS = [
   {
@@ -118,8 +146,8 @@ const IMAGE_PATTERN_BY_STYLE = {
     1: 'single',
     2: 'two-up',
     3: 'even-grid',
-    4: 'even-grid',
-    5: 'hero-grid'
+    4: 'comparison-grid',
+    5: 'comparison-grid'
   },
   editorial: {
     0: 'empty',
@@ -271,6 +299,7 @@ export function App() {
 
   function randomizeLayout() {
     setLayout((current) => ({
+      coverStyle: nextRandomValue(COVER_STYLE_OPTIONS, current.coverStyle),
       imageStyle: nextRandomValue(IMAGE_STYLE_OPTIONS, current.imageStyle),
       commentPlacement: nextRandomValue(LAYOUT_OPTIONS.commentPlacement, current.commentPlacement),
       itineraryStyle: nextRandomValue(LAYOUT_OPTIONS.itineraryStyle, current.itineraryStyle),
@@ -348,16 +377,20 @@ export function App() {
 
               <SectionHeader
                 icon={LayoutGrid}
-                title="Quote Building Blocks"
+                title="Quote Layout"
                 action={
                   <button className="ghost-action" onClick={randomizeLayout} type="button">
                     <RefreshCcw size={16} />
-                    Randomize
+                    Shuffle
                   </button>
                 }
               />
 
               <div className="controls-panel">
+                <CoverStyleControl
+                  value={layout.coverStyle}
+                  onChange={(value) => setLayout((current) => ({ ...current, coverStyle: value }))}
+                />
                 <RadiusControl
                   radius={guide.radius}
                   updateGuide={updateGuide}
@@ -542,12 +575,12 @@ function SmartLogo({
   iconSize,
   variant = 'editor'
 }) {
-  const [autoBackground, setAutoBackground] = useState(variant === 'quote' ? 'none' : 'dark');
+  const [autoBackground, setAutoBackground] = useState(getDefaultLogoBackground(variant));
   const resolvedBackground = backgroundMode === 'auto' ? autoBackground : backgroundMode;
 
   useEffect(() => {
     if (!logoUrl) {
-      setAutoBackground(variant === 'quote' ? 'none' : 'dark');
+      setAutoBackground(getDefaultLogoBackground(variant));
       return;
     }
 
@@ -564,7 +597,7 @@ function SmartLogo({
         const context = canvas.getContext('2d', { willReadFrequently: true });
 
         if (!context) {
-          setAutoBackground(variant === 'quote' ? 'none' : 'dark');
+          setAutoBackground(getDefaultLogoBackground(variant));
           return;
         }
 
@@ -593,7 +626,7 @@ function SmartLogo({
         }
 
         if (!count) {
-          setAutoBackground(variant === 'quote' ? 'none' : 'dark');
+          setAutoBackground(getDefaultLogoBackground(variant));
           return;
         }
 
@@ -608,21 +641,23 @@ function SmartLogo({
           setAutoBackground(
             variant === 'quote'
               ? resolveQuoteLogoBackground(luminance, brandPrimary, brandSecondary)
-              : contrastRatio(luminance, 1) >= 3
-                ? 'light'
-                : 'dark'
+              : variant === 'letterhead'
+                ? resolveLetterheadLogoBackground(luminance, brandPrimary, brandSecondary)
+                : contrastRatio(luminance, 1) >= 3
+                  ? 'light'
+                  : 'dark'
           );
         }
       } catch {
         if (!isCancelled) {
-          setAutoBackground(variant === 'quote' ? 'none' : 'dark');
+          setAutoBackground(getDefaultLogoBackground(variant));
         }
       }
     };
 
     image.onerror = () => {
       if (!isCancelled) {
-        setAutoBackground(variant === 'quote' ? 'none' : 'dark');
+        setAutoBackground(getDefaultLogoBackground(variant));
       }
     };
 
@@ -636,7 +671,7 @@ function SmartLogo({
   return (
     <div
       className={`${className} logo-bg-${resolvedBackground}`}
-      style={{ '--logo-brand-bg': brandSecondary } as CSSVariableStyle}
+      style={{ '--logo-brand-bg': brandSecondary, '--logo-primary-bg': brandPrimary } as CSSVariableStyle}
     >
       {logoUrl ? <img src={logoUrl} alt={`${brandName} logo`} /> : <Plane size={iconSize} />}
     </div>
@@ -686,6 +721,46 @@ function RadiusControl({ radius, updateGuide }) {
         onChange={(event) => updateGuide('radius', Number(event.target.value))}
       />
       <strong>{radius}px</strong>
+    </div>
+  );
+}
+
+function CoverStyleControl({ value, onChange }) {
+  return (
+    <div className="control-group cover-style-control">
+      <span>Quote Opening</span>
+      <div className="cover-style-options">
+        {COVER_STYLE_OPTIONS.map((option) => {
+          const Icon = option.icon;
+
+          return (
+            <button
+              key={option.value}
+              className={value === option.value ? 'cover-style-option active' : 'cover-style-option'}
+              type="button"
+              onClick={() => onChange(option.value)}
+            >
+              <span className="cover-style-title">
+                <Icon size={16} />
+                <strong>{option.label}</strong>
+              </span>
+              <CoverStylePreview styleName={option.value} />
+              <small>{option.description}</small>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function CoverStylePreview({ styleName }) {
+  return (
+    <div className={`cover-style-preview cover-style-preview-${styleName}`} aria-hidden="true">
+      <span />
+      <span />
+      <span />
+      <span />
     </div>
   );
 }
@@ -762,31 +837,8 @@ function QuotePreview({ guide, layout, style }) {
   const [isFullView, setIsFullView] = useState(false);
 
   const previewDocument = (
-    <div className="quote-page" style={style}>
-      <header className="quote-header">
-        <SmartLogo
-          className="quote-logo"
-          logoUrl={guide.logoUrl}
-          brandName={guide.brandName}
-          backgroundMode={guide.logoBackground}
-          brandPrimary={guide.colors.primary}
-          brandSecondary={guide.colors.secondary}
-          iconSize={24}
-          variant="quote"
-        />
-        <div>
-          <p>Private aviation quote</p>
-          <h2>{guide.brandName}</h2>
-        </div>
-      </header>
-
-      <section className="quote-intro">
-        <div>
-          <p className="quote-kicker">Prepared for {sampleQuote.client}</p>
-          <h3>{sampleQuote.route}</h3>
-        </div>
-        <p>{sampleQuote.note}</p>
-      </section>
+    <div className="quote-page" data-quote-style={layout.coverStyle} style={style}>
+      <QuoteOpening guide={guide} coverStyle={layout.coverStyle} />
 
       <div className="option-list">
         {sampleQuote.options.map((option, index) => (
@@ -843,9 +895,54 @@ function QuotePreview({ guide, layout, style }) {
   );
 }
 
-function AircraftOption({ option, index, layout }) {
+function QuoteOpening({ guide, coverStyle }) {
+  const coverImage = getCoverImage(sampleQuote);
+  const openingStyle = {
+    '--cover-image': coverImage?.src ? `url("${coverImage.src}")` : 'none',
+    '--cover-position': coverImage?.objectPosition || 'center'
+  } as CSSVariableStyle;
+
   return (
-    <article className="aircraft-option">
+    <div className={`quote-opening quote-opening-${coverStyle || 'clean'}`} style={openingStyle}>
+      <header className="quote-header">
+        <SmartLogo
+          className="quote-logo"
+          logoUrl={guide.logoUrl}
+          brandName={guide.brandName}
+          backgroundMode={guide.logoBackground}
+          brandPrimary={guide.colors.primary}
+          brandSecondary={guide.colors.secondary}
+          iconSize={24}
+          variant={coverStyle === 'letterhead' ? 'letterhead' : 'quote'}
+        />
+        <div>
+          <p>Private aviation quote</p>
+          <h2>{guide.brandName}</h2>
+        </div>
+      </header>
+
+      <section className="quote-intro">
+        <div>
+          <p className="quote-kicker">Prepared for {sampleQuote.client}</p>
+          <h3>{sampleQuote.route}</h3>
+        </div>
+        <p>{sampleQuote.note}</p>
+      </section>
+    </div>
+  );
+}
+
+function AircraftOption({ option, index, layout }) {
+  const isEditorial = layout.imageStyle === 'editorial';
+  const commentPlacement = isEditorial ? 'below-title' : layout.commentPlacement;
+  const dataStyle = isEditorial ? 'badges' : layout.dataStyle;
+
+  return (
+    <article
+      className="aircraft-option"
+      data-image-style={layout.imageStyle}
+      data-featured-option={isEditorial && index === 0 ? 'true' : undefined}
+    >
       <AircraftImages images={option.images} title={option.title} styleName={layout.imageStyle} />
 
       <div className="option-content">
@@ -860,12 +957,12 @@ function AircraftOption({ option, index, layout }) {
           </div>
         </div>
 
-        {layout.commentPlacement === 'below-title' ? <Comment text={option.comment} /> : null}
+        {commentPlacement === 'below-title' ? <Comment text={option.comment} /> : null}
 
         <Itinerary option={option} styleName={layout.itineraryStyle} />
-        <AircraftData option={option} styleName={layout.dataStyle} />
+        <AircraftData option={option} styleName={dataStyle} />
 
-        {layout.commentPlacement === 'after-data' ? <Comment text={option.comment} /> : null}
+        {commentPlacement === 'after-data' ? <Comment text={option.comment} /> : null}
 
         <div className="amenity-row">
           {option.amenities.map((amenity) => (
@@ -873,7 +970,7 @@ function AircraftOption({ option, index, layout }) {
           ))}
         </div>
 
-        {layout.commentPlacement === 'callout' ? <Comment text={option.comment} /> : null}
+        {commentPlacement === 'callout' ? <Comment text={option.comment} /> : null}
 
       </div>
     </article>
@@ -1160,6 +1257,18 @@ function nextRandomValue(options, currentValue) {
   return candidates[Math.floor(Math.random() * candidates.length)];
 }
 
+function getCoverImage(quote) {
+  for (const option of quote.options || []) {
+    const image = option.images?.find((candidate) => candidate.src);
+
+    if (image) {
+      return image;
+    }
+  }
+
+  return null;
+}
+
 function createNeutralTintVars(color) {
   const { hue, saturation, lightness } = hexToHsl(color);
   const neutralChroma = Math.round(Math.min(saturation * 0.07, 3));
@@ -1215,6 +1324,43 @@ function resolveQuoteLogoBackground(logoLuminance, brandPrimary, brandSecondary)
   }
 
   return logoLuminance >= 0.55 ? 'dark' : 'light';
+}
+
+function getDefaultLogoBackground(variant) {
+  if (variant === 'quote') {
+    return 'none';
+  }
+
+  if (variant === 'letterhead') {
+    return 'dark';
+  }
+
+  return 'dark';
+}
+
+function resolveLetterheadLogoBackground(logoLuminance, brandPrimary, brandSecondary) {
+  const primary = hexToRgb(brandPrimary);
+  const secondary = hexToRgb(brandSecondary);
+  const candidates = [
+    { value: 'none', luminance: 1 },
+    { value: 'primary', luminance: primary ? relativeLuminance(primary.red, primary.green, primary.blue) : 0.02 },
+    { value: 'accent', luminance: secondary ? relativeLuminance(secondary.red, secondary.green, secondary.blue) : 0.2 },
+    { value: 'dark', luminance: relativeLuminance(17, 24, 39) },
+    { value: 'light', luminance: 1 }
+  ];
+  const contrastOnWhite = contrastRatio(logoLuminance, 1);
+
+  if (contrastOnWhite >= 1.8) {
+    return 'none';
+  }
+
+  return candidates
+    .filter((candidate) => candidate.value !== 'none')
+    .map((candidate) => ({
+      ...candidate,
+      contrast: contrastRatio(logoLuminance, candidate.luminance)
+    }))
+    .sort((first, second) => second.contrast - first.contrast)[0].value;
 }
 
 function hexToRgb(hex) {
